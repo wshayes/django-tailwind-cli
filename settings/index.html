@@ -600,11 +600,44 @@
 </dl>
 <h2 id="tailwindconfigjs"><code>tailwind.config.js</code></h2>
 <p>If you don't create a <code>tailwind.config.js</code> file yourself, the management commands will create a sane default for you inside the <code>BASE_DIR</code> of your project. The default activates all the official plugins for Tailwind CSS and adds a minimal plugin to support some variants for <a href="https://htmx.org/">HTMX</a>.</p>
+<p>The default configuration also embrasses the nice trick authored by Carlton Gibson in his post <a href="https://noumenal.es/notes/tailwind/django-integration/">Using Django’s template loaders to configure Tailwind¶</a>. The implementation adopts Carlton's implementation to honor the conventions of this project. If you put your <code>tailwind.config.js</code> in a different location then your <code>BASE_DIR</code>, you have to change this file too.</p>
+<p>This configuration uses the management command <code>tailwind list_templates</code>, which list all the templates files inside your project.</p>
 <div class="highlight"><span class="filename">tailwind.config.js</span><pre><span></span><code><span class="cm">/** @type {import(&#39;tailwindcss&#39;).Config} */</span>
 <span class="kd">const</span><span class="w"> </span><span class="nx">plugin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">require</span><span class="p">(</span><span class="s2">&quot;tailwindcss/plugin&quot;</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">spawnSync</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">require</span><span class="p">(</span><span class="s2">&quot;child_process&quot;</span><span class="p">);</span>
+
+<span class="c1">// Calls Django to fetch template files</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">getTemplateFiles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python3&quot;</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;-m&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;django&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;list_templates&quot;</span><span class="p">];</span>
+<span class="w">  </span><span class="c1">// Assumes tailwind.config.js is located in the BASE_DIR of your Django project.</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">cwd</span><span class="o">:</span><span class="w"> </span><span class="nx">__dirname</span><span class="w"> </span><span class="p">};</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">spawnSync</span><span class="p">(</span><span class="nx">command</span><span class="p">,</span><span class="w"> </span><span class="nx">args</span><span class="p">,</span><span class="w"> </span><span class="nx">options</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="nx">result</span><span class="p">.</span><span class="nx">error</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">toString</span><span class="p">(),</span><span class="w"> </span><span class="nx">result</span><span class="p">.</span><span class="nx">stderr</span><span class="p">.</span><span class="nx">toString</span><span class="p">());</span>
+<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span>
+<span class="w">      </span><span class="sb">`Django management command exited with code </span><span class="si">${</span><span class="nx">result</span><span class="p">.</span><span class="nx">status</span><span class="si">}</span><span class="sb">`</span>
+<span class="w">    </span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">templateFiles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">result</span><span class="p">.</span><span class="nx">stdout</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">toString</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s2">&quot;\n&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">file</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">file</span><span class="p">.</span><span class="nx">trim</span><span class="p">())</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="kd">function</span><span class="w"> </span><span class="p">(</span><span class="nx">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nx">e</span><span class="p">;</span>
+<span class="w">    </span><span class="p">});</span><span class="w"> </span><span class="c1">// Remove empty strings, including last empty line.</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">templateFiles</span><span class="p">;</span>
+<span class="p">};</span>
 
 <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;./templates/**/*.html&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;**/templates/**/*.html&quot;</span><span class="p">],</span>
+<span class="w">  </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="p">[].</span><span class="nx">concat</span><span class="p">(</span><span class="nx">getTemplateFiles</span><span class="p">()),</span>
 <span class="w">  </span><span class="nx">theme</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nx">extend</span><span class="o">:</span><span class="w"> </span><span class="p">{},</span>
 <span class="w">  </span><span class="p">},</span>
