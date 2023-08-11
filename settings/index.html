@@ -437,6 +437,19 @@
     tailwind.config.js
   </a>
   
+    <nav class="md-nav" aria-label="tailwind.config.js">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simple-config-for-sublime-text-and-neovim" class="md-nav__link">
+    Simple Config for Sublime Text and (neo)vim
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -547,6 +560,19 @@
     tailwind.config.js
   </a>
   
+    <nav class="md-nav" aria-label="tailwind.config.js">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simple-config-for-sublime-text-and-neovim" class="md-nav__link">
+    Simple Config for Sublime Text and (neo)vim
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -602,6 +628,12 @@
 <p>If you don't create a <code>tailwind.config.js</code> file yourself, the management commands will create a sane default for you inside the <code>BASE_DIR</code> of your project. The default activates all the official plugins for Tailwind CSS and adds a minimal plugin to support some variants for <a href="https://htmx.org/">HTMX</a>.</p>
 <p>The default configuration also embrasses the nice trick authored by Carlton Gibson in his post <a href="https://noumenal.es/notes/tailwind/django-integration/">Using Django’s template loaders to configure Tailwind¶</a>. The implementation adopts Carlton's implementation to honor the conventions of this project. If you put your <code>tailwind.config.js</code> in a different location then your <code>BASE_DIR</code>, you have to change this file too.</p>
 <p>This configuration uses the management command <code>tailwind list_templates</code>, which list all the templates files inside your project.</p>
+<div class="admonition warning">
+<p class="admonition-title">Editor Integration besides VS Code</p>
+<p>The following default configuration tries to be as smart as possible to find all the templates inside your project and installed dependencies. This works like a charm when you run the debug server using <code>python manage.py tailwind runserver</code>. It also works if you start VSCode with <code>code .</code> from within the active virtual environment.</p>
+<p>But it does not work with Sublime Text and the lsp-tailwindcss package or with the various LSP packages for (neo)vim. The reason is, that these intergrations not honoring the active virtual environment when being started. If you have an idea to solve this, patches are welcome.</p>
+<p><strong>With editors besides VS Code please use the simple config at the end of this page.</strong></p>
+</div>
 <div class="highlight"><span class="filename">tailwind.config.js</span><pre><span></span><code><span class="cm">/** @type {import(&#39;tailwindcss&#39;).Config} */</span>
 <span class="kd">const</span><span class="w"> </span><span class="nx">plugin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">require</span><span class="p">(</span><span class="s2">&quot;tailwindcss/plugin&quot;</span><span class="p">);</span>
 <span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">spawnSync</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">require</span><span class="p">(</span><span class="s2">&quot;child_process&quot;</span><span class="p">);</span>
@@ -609,7 +641,7 @@
 <span class="c1">// Calls Django to fetch template files</span>
 <span class="kd">const</span><span class="w"> </span><span class="nx">getTemplateFiles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python3&quot;</span><span class="p">;</span>
-<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;-m&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;django&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;tailwind&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;list_templates&quot;</span><span class="p">];</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;manage.py&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;tailwind&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;list_templates&quot;</span><span class="p">];</span>
 <span class="w">  </span><span class="c1">// Assumes tailwind.config.js is located in the BASE_DIR of your Django project.</span>
 <span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">cwd</span><span class="o">:</span><span class="w"> </span><span class="nx">__dirname</span><span class="w"> </span><span class="p">};</span>
 
@@ -638,6 +670,29 @@
 
 <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="p">[].</span><span class="nx">concat</span><span class="p">(</span><span class="nx">getTemplateFiles</span><span class="p">()),</span>
+<span class="w">  </span><span class="nx">theme</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">extend</span><span class="o">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nx">plugins</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nx">require</span><span class="p">(</span><span class="s2">&quot;@tailwindcss/typography&quot;</span><span class="p">),</span>
+<span class="w">    </span><span class="nx">require</span><span class="p">(</span><span class="s2">&quot;@tailwindcss/forms&quot;</span><span class="p">),</span>
+<span class="w">    </span><span class="nx">require</span><span class="p">(</span><span class="s2">&quot;@tailwindcss/aspect-ratio&quot;</span><span class="p">),</span>
+<span class="w">    </span><span class="nx">require</span><span class="p">(</span><span class="s2">&quot;@tailwindcss/container-queries&quot;</span><span class="p">),</span>
+<span class="w">    </span><span class="nx">plugin</span><span class="p">(</span><span class="kd">function</span><span class="w"> </span><span class="p">({</span><span class="w"> </span><span class="nx">addVariant</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">addVariant</span><span class="p">(</span><span class="s2">&quot;htmx-settling&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;&amp;.htmx-settling&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;.htmx-settling &amp;&quot;</span><span class="p">]);</span>
+<span class="w">      </span><span class="nx">addVariant</span><span class="p">(</span><span class="s2">&quot;htmx-request&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;&amp;.htmx-request&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;.htmx-request &amp;&quot;</span><span class="p">]);</span>
+<span class="w">      </span><span class="nx">addVariant</span><span class="p">(</span><span class="s2">&quot;htmx-swapping&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;&amp;.htmx-swapping&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;.htmx-swapping &amp;&quot;</span><span class="p">]);</span>
+<span class="w">      </span><span class="nx">addVariant</span><span class="p">(</span><span class="s2">&quot;htmx-added&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;&amp;.htmx-added&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;.htmx-added &amp;&quot;</span><span class="p">]);</span>
+<span class="w">    </span><span class="p">}),</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="p">};</span>
+</code></pre></div>
+<h3 id="simple-config-for-sublime-text-and-neovim">Simple Config for Sublime Text and (neo)vim</h3>
+<div class="highlight"><span class="filename">tailwind.config.js</span><pre><span></span><code><span class="cm">/** @type {import(&#39;tailwindcss&#39;).Config} */</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">plugin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">require</span><span class="p">(</span><span class="s2">&quot;tailwindcss/plugin&quot;</span><span class="p">);</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;./templates/**/*.html&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;**/templates/**/*.html&quot;</span><span class="p">],</span>
 <span class="w">  </span><span class="nx">theme</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nx">extend</span><span class="o">:</span><span class="w"> </span><span class="p">{},</span>
 <span class="w">  </span><span class="p">},</span>
